@@ -52,8 +52,8 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         cfg_path = sys.argv[1]
-    elif "REPO_DIR" in os.environ:
-        cfg_path = os.environ.get("REPO_DIR")
+    elif "VER_CONFIG" in os.environ:
+        cfg_path = os.environ.get("VER_CONFIG")
     else:
         raise Exception("Config file not found")
     
