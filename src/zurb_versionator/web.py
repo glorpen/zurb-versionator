@@ -34,6 +34,10 @@ class Secured():
 
 def get_config(path):
     path = os.path.realpath(path)
+    
+    if not os.path.exists(path):
+        raise Exception("Config file does not exist")
+    
     config = configparser.SafeConfigParser()
     config.read(path)
     
@@ -46,7 +50,14 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, handlers=[SysLogHandler(address="/dev/log")])
     logger = logging.getLogger("web")
     
-    cfg = get_config(sys.argv[1])
+    if len(sys.argv) > 1:
+        cfg_path = sys.argv[1]
+    elif "REPO_DIR" in os.environ:
+        cfg_path = os.environ.get("REPO_DIR")
+    else:
+        raise Exception("Config file not found")
+    
+    cfg = get_config(cfg_path)
     
     logger.info("Using repo in %s", cfg["repo_dir"])
 
