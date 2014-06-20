@@ -43,12 +43,12 @@ def get_config(path):
     }
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, handlers=[SysLogHandler(address="/dev/log")])
+    logging.basicConfig(level=logging.INFO, handlers=[SysLogHandler(address="/dev/log")])
     logger = logging.getLogger("web")
     
     cfg = get_config(sys.argv[1])
     
-    logger.info("Usiong repo in %s", cfg["repo_dir"])
+    logger.info("Using repo in %s", cfg["repo_dir"])
 
     sec = Secured()
     sec.load(cfg["key"])

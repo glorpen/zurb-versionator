@@ -152,7 +152,7 @@ class Versionator():
         
         self.logger.info("building & uploading tag:%s version:%s", tag, version)
         self._run_cmd("rm", "-rf", "dist", "zurb_foundation.egg-info")
-        self._run_cmd("sh","-c", "cd %s && python setup.py -q sdist" % self.repo_dir)
+        self._run_cmd("sh","-c", "cd %s && python setup.py -q sdist upload" % self.repo_dir)
     
     def run(self):
         self.logger.info("Running")
