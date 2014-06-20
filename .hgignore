@@ -4,3 +4,5 @@ syntax: regexp
 ^env$
 ^\..*project$
 ^key.txt$
+^.*\.egg-info$
+^dist$

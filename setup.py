@@ -19,7 +19,8 @@ setup(
     maintainer = "Arkadiusz Dzięgiel",
     maintainer_email = "arkadiusz.dziegiel@glorpen.pl",
     packages=[pkgname],
-    package_dir={pkgname:"resources"},
+    package_dir={pkgname:"src/"+pkgname},
+    package_data={pkgname: ['resources/tpl/*.py']},
     include_package_data = True,
     classifiers=[
         'Environment :: Web Environment',

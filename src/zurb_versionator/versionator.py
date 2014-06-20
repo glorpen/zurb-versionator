@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 '''
 @author: Arkadiusz Dzięgiel
 '''
@@ -13,8 +11,6 @@ import urllib
 import os
 import logging
 from itertools import zip_longest
-import traceback
-from logging import handlers
 
 class CommandException(Exception):
     pass
