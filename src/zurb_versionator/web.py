@@ -46,7 +46,7 @@ def get_config(path):
         "repo_dir": os.path.join(os.path.dirname(path), config["global"]["repo_dir"]),
     }
 
-if __name__ == "__main__":
+def init_app():
     logging.basicConfig(level=logging.INFO, handlers=[SysLogHandler(address="/dev/log")])
     logger = logging.getLogger("web")
     
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     cfg = get_config(cfg_path)
     
     logger.info("Using repo in %s", cfg["repo_dir"])
-
+    
     sec = Secured()
     sec.load(cfg["key"])
     
@@ -83,5 +83,9 @@ if __name__ == "__main__":
     def clear():
         v.clear_cache()
         return "ok"
-    
+
+    return app
+
+if __name__ == "__main__":
+    app = init_app()
     app.run(host='localhost', port=8000)
