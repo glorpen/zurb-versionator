@@ -11,13 +11,16 @@ import urllib
 import os
 import logging
 from itertools import zip_longest
+import pkg_resources
+import shutil
 
 class CommandException(Exception):
     pass
 
 class Versionator():
-    def __init__(self):
+    def __init__(self, repo_dir):
         self.logger = logging.getLogger("zurb.versionator")
+        self.repo_dir = repo_dir
         self.author = "mhayes"
         self.week_in_secs = 7*24*60*60
         self.commits_count = 10
@@ -26,8 +29,14 @@ class Versionator():
     def clear_cache(self):
         self._cached_versions.clear()
     
-    def _run_cmd(self, *args):
-        p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    def _run_cmd(self, *args, git_env=True):
+        env = os.environ.copy()
+        
+        if git_env:
+            env["GIT_WORK_TREE"] = self.repo_dir
+            env["GIT_DIR"] = os.path.join(self.repo_dir,".git")
+            
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, env=env)
         d = p.stdout.read()
         p.stdout.close()
         ret = p.wait()
@@ -105,25 +114,54 @@ class Versionator():
     def normalize_version(self, v):
         return suggest_normalized_version(v)
     
-    def build_tag(self, tag, version):
+    def list_missing_versions(self):
+        for tag, version in v.get_versions().items():
+            if not self.check_pypi_version(version):
+                yield tag, version
+                #self.build_tag(tag, version)
+            else:
+                #older ones should be already packed
+                self.logger.debug("Version found on pypi")
+                break
+    
+    def update_repo(self):
+        if not os.path.exists(self.repo_dir):
+            self.logger.info("Cloning")
+            self._run_cmd("git", "clone", "https://github.com/zurb/bower-foundation.git", self.repo_dir, git_env=False)
+        else:
+            self.logger.info("Updating")
+            self._run_cmd("git", "pull","--ff-only","--all")
+    
+    def build_and_upload_tag(self, tag, version):
         self.logger.info("Building for tag %s as %s", tag, version)
-        self._run_cmd("git", "checkout", "-f", "python")
-        self._run_cmd("git", "clean", "-fd", "python")
-        self._run_cmd("git", "checkout", "-f", tag, "scss", "js", "css")
         
-        with open(os.path.join("python","__init__.py"), "r+t") as f:
-            d = f.read().replace("%version%", str(version))
-            f.seek(0)
+        self.logger.debug("Cleaning")
+        self._run_cmd("git", "checkout", "-f")
+        self._run_cmd("git", "clean", "-fd")
+        
+        self.logger.debug("Creating python package")
+        org = pkg_resources.resource_stream(__name__, "resources/tpl/__init__.py")
+        with open(os.path.join(self.repo_dir, "__init__.py"), "wb") as f:
+            d = org.read().replace(b"%version%", version.encode())
             f.write(d)
-            f.truncate()
+        
+        for f in ["README.rst", "setup.py", "MANIFEST.in"]:
+            in_ = pkg_resources.resource_stream(__name__, "resources/tpl/"+f)
+            with open(os.path.join(self.repo_dir, f), "wb") as out:
+                shutil.copyfileobj(in_, out)
         
         self.logger.info("building & uploading tag:%s version:%s", tag, version)
-        self._run_cmd("rm","-rf","dist", "zurb_foundation.egg-info")
-        self._run_cmd("python", "setup.py", "sdist", "upload")
-        
+        self._run_cmd("rm", "-rf", "dist", "zurb_foundation.egg-info")
+        print(self._run_cmd("sh","-c", "cd %s && python setup.py sdist" % self.repo_dir))
+        #self._run_cmd("python", "setup.py", "sdist", "upload")
     
     def run(self):
         self.logger.info("Running")
+        self.update_repo()
+        for tag, version in v.list_missing_versions():
+            self.build_and_upload_tag(tag, version)
+        
+        """
         self._run_cmd("git", "reset", "--hard")
         self._run_cmd("git", "checkout", "-f")
         self.logger.info("Pulling")
@@ -140,5 +178,8 @@ class Versionator():
             else:
                 #older ones should be already packed
                 break
+        """
 if __name__ == "__main__":
-    pass
+    logging.basicConfig(level=logging.DEBUG)
+    v = Versionator("/mnt/sandbox/workspace/zurb-versionator/repo")
+    v.run()

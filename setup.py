@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import re
 import os
 
@@ -18,8 +18,8 @@ setup(
     author_email = "arkadiusz.dziegiel@glorpen.pl",
     maintainer = "Arkadiusz Dzięgiel",
     maintainer_email = "arkadiusz.dziegiel@glorpen.pl",
-    packages=[pkgname],
-    package_dir={pkgname:"src/"+pkgname},
+    packages=find_packages("src"),
+    package_dir={"":"src"},
     package_data={pkgname: ['resources/tpl/*.py']},
     include_package_data = True,
     classifiers=[
