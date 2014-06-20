@@ -3,7 +3,6 @@
 '''
 
 import subprocess
-import json
 from verlib import NormalizedVersion as V, suggest_normalized_version
 from collections import OrderedDict
 from urllib.request import urlopen
@@ -35,6 +34,7 @@ class Versionator():
         if git_env:
             env["GIT_WORK_TREE"] = self.repo_dir
             env["GIT_DIR"] = os.path.join(self.repo_dir,".git")
+            self.logger.debug("Added GIT env variables pointing to %s", self.repo_dir)
             
         p = subprocess.Popen(args, stdout=subprocess.PIPE, env=env)
         d = p.stdout.read()
@@ -115,7 +115,7 @@ class Versionator():
         return suggest_normalized_version(v)
     
     def list_missing_versions(self):
-        for tag, version in v.get_versions().items():
+        for tag, version in self.get_versions().items():
             if not self.check_pypi_version(version):
                 yield tag, version
                 #self.build_tag(tag, version)
@@ -152,34 +152,12 @@ class Versionator():
         
         self.logger.info("building & uploading tag:%s version:%s", tag, version)
         self._run_cmd("rm", "-rf", "dist", "zurb_foundation.egg-info")
-        print(self._run_cmd("sh","-c", "cd %s && python setup.py sdist" % self.repo_dir))
-        #self._run_cmd("python", "setup.py", "sdist", "upload")
+        self._run_cmd("sh","-c", "cd %s && python setup.py -q sdist" % self.repo_dir)
     
     def run(self):
         self.logger.info("Running")
+        
         self.update_repo()
-        for tag, version in v.list_missing_versions():
+        
+        for tag, version in self.list_missing_versions():
             self.build_and_upload_tag(tag, version)
-        
-        """
-        self._run_cmd("git", "reset", "--hard")
-        self._run_cmd("git", "checkout", "-f")
-        self.logger.info("Pulling")
-        self._run_cmd("git", "pull", "--ff-only")
-        self.logger.info("Pulling upstream")
-        self._run_cmd("git", "pull", "-t", "--no-edit", "https://github.com/zurb/bower-foundation.git")
-        self.logger.info("Pushing changes")
-        self._run_cmd("git", "push")
-        
-        self.logger.info("Checking versions")
-        for tag, version in v.get_versions().items():
-            if not self.check_pypi_version(version):
-                self.build_tag(tag, version)
-            else:
-                #older ones should be already packed
-                break
-        """
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    v = Versionator("/mnt/sandbox/workspace/zurb-versionator/repo")
-    v.run()

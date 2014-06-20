@@ -9,6 +9,9 @@ from logging.handlers import SysLogHandler
 from zurb_versionator.versionator import Versionator
 from bottle import Bottle
 import traceback
+import configparser
+import sys
+import os
 
 class Secured():
     
@@ -29,15 +32,29 @@ class Secured():
                 return ""
         return wrapper
 
+def get_config(path):
+    path = os.path.realpath(path)
+    config = configparser.SafeConfigParser()
+    config.read(path)
+    
+    return {
+        "key":config["global"]["key"],
+        "repo_dir": os.path.join(os.path.dirname(path), config["global"]["repo_dir"]),
+    }
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, handlers=[SysLogHandler(address="/dev/log")])
+    logger = logging.getLogger("web")
     
+    cfg = get_config(sys.argv[1])
+    
+    logger.info("Usiong repo in %s", cfg["repo_dir"])
+
     sec = Secured()
-    sec.load("key.txt")
+    sec.load(cfg["key"])
     
-    v = Versionator()
-    v.logger.info("Starting")
+    v = Versionator(cfg["repo_dir"])
+    logger.info("Starting")
     app = Bottle()
     
     @app.post('/zurb/<key>')
@@ -46,7 +63,7 @@ if __name__ == "__main__":
         try:
             v.run()
         except Exception as _e:
-            v.logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
             
         return ''
     
