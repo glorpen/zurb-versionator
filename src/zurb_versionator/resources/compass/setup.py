@@ -19,7 +19,7 @@ f.close()
 setup(
     name='compass-stylesheets',
     version=version,
-    description='The most advanced responsive front-end framework in the world. Quickly create prototypes and production code for sites and apps that work on any kind of device',
+    description='Stylesheets from Compass framework',
     long_description=readme,
     author='Chris Eppstein',
     author_email = "chris@eppsteins.net",
