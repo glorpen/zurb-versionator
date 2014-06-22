@@ -6,12 +6,12 @@ Created on 20 cze 2014
 
 import logging
 from logging.handlers import SysLogHandler
-from zurb_versionator.versionator import Versionator
+from zurb_versionator.foundation.versionator import Versionator
 from bottle import Bottle
 import traceback
-import configparser
 import sys
 import os
+from zurb_versionator.versionator import get_config
 
 class Secured():
     
@@ -34,16 +34,11 @@ class Secured():
 
 def get_config(path):
     path = os.path.realpath(path)
-    
-    if not os.path.exists(path):
-        raise Exception("Config file does not exist")
-    
-    config = configparser.SafeConfigParser()
-    config.read(path)
+    config = get_config(path)
     
     return {
-        "key":config["global"]["key"],
-        "repo_dir": os.path.join(os.path.dirname(path), config["global"]["repo_dir"]),
+        "key":config["foundation"]["key"],
+        "repo_dir": os.path.join(os.path.dirname(path), config["foundation"]["repo_dir"]),
     }
 
 def init_app():

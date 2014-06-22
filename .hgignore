@@ -7,3 +7,5 @@ syntax: regexp
 ^.*\.egg-info$
 ^dist$
 ^repo$
+^repo-compass$
+__pycache__
