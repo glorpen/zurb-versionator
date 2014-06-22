@@ -32,7 +32,7 @@ class Secured():
                 return ""
         return wrapper
 
-def get_config(path):
+def _get_config(path):
     path = os.path.realpath(path)
     config = get_config(path)
     
@@ -52,7 +52,7 @@ def init_app():
     else:
         raise Exception("Config file not found")
     
-    cfg = get_config(cfg_path)
+    cfg = _get_config(cfg_path)
     
     logger.info("Using repo in %s", cfg["repo_dir"])
     
