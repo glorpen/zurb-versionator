@@ -160,7 +160,6 @@ class Versionator(object):
                 shutil.copyfileobj(in_, out)
         
         self.logger.info("building & uploading tag:%s version:%s", tag, version)
-        self._run_cmd("rm", "-rf", "dist", "*.egg-info")
         self._run_cmd("sh","-c", "cd %s && python setup.py -q sdist upload" % os.path.join(self.repo_dir, self.build_dir))
     
     def run(self):
@@ -171,13 +170,21 @@ class Versionator(object):
         for tag, version in self.list_missing_versions():
             self.build_and_upload_tag(tag, version)
 
+class MyConfig(configparser.SafeConfigParser):
+    def __init__(self, p):
+        self.path = p
+        super(MyConfig, self).__init__()
+    
+    def get_path(self, section, option):
+        return os.path.join(os.path.dirname(self.path), self[section][option])
+
 def get_config(path):
     path = os.path.realpath(path)
     
     if not os.path.exists(path):
         raise Exception("Config file does not exist")
     
-    config = configparser.SafeConfigParser()
+    config = MyConfig(path)
     config.read(path)
     
     return config

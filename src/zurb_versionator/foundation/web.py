@@ -38,7 +38,7 @@ def _get_config(path):
     
     return {
         "key":config["foundation"]["key"],
-        "repo_dir": os.path.join(os.path.dirname(path), config["foundation"]["repo_dir"]),
+        "repo_dir": config.get_path("foundation", "repo_dir"),
     }
 
 def init_app():

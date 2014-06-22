@@ -26,5 +26,5 @@ class Versionator(BaseVersionator):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     config = get_config(sys.argv[1])
-    repo = config["compass"]["repo_dir"]
+    repo = config.get_path("compass","repo_dir")
     Versionator(repo).run()
