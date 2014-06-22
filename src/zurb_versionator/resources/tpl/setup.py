@@ -28,7 +28,7 @@ setup(
     url='http://foundation.zurb.com',
     packages=[zurb_pkg],
     package_dir={zurb_pkg:"."},
-    package_data={zurb_pkg: list(glob.glob("scss/*.*"))+list(glob.glob("css/*.*"))+list(glob.glob("js/*.*"))},
+    package_data={zurb_pkg: list(glob.glob("scss/*.*"))+list(glob.glob("scss/*/*.*"))+list(glob.glob("scss/*/*/*.*"))+list(glob.glob("css/*.*"))+list(glob.glob("js/*.*"))},
     include_package_data = True,
     classifiers=[
         'Environment :: Web Environment',
