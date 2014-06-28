@@ -8,6 +8,7 @@ from collections import OrderedDict
 from urllib.request import urlopen
 import urllib
 import os
+import re
 import logging
 from itertools import zip_longest
 import pkg_resources
@@ -25,6 +26,7 @@ class Versionator(object):
     git_repo = None
     tpl_name = None
     build_dir = "."
+    re_tag = re.compile(r'^.*\(tag: (.*)\)$')
     
     week_in_secs = 7*24*60*60
     commits_count = 10
@@ -83,23 +85,29 @@ class Versionator(object):
                 
     
     def get_versions(self):
-        tags = self._run_cmd("git","tag").splitlines()
+        lines = sorted(self._run_cmd("git", "log", "--tags", "--simplify-by-decoration", '--pretty=%ai %d').splitlines(), reverse=True)
+        tags = []
+        for line in lines:
+            m = self.re_tag.match(line)
+            if(m):
+                tag = m.group(1)
+                v = self.normalize_version(tag)
+                if not v is None:
+                    tags.append((tag, v))
         
         items = []
         
         for tag, tag_next in zip_longest(tags, tags[1:]):
+            items.append(tag)
             cmd = []
             if self.author:
                 cmd.append('--author=%s' % self.author)
                 
-            d = self._run_cmd("git","log", "%s...%s" % (tag, tag_next or ""),'--pretty=format:%H %ct', *cmd).splitlines()
+            d = self._run_cmd("git","log", "%s...%s" % (tag[0], tag_next[0] if tag_next else ""),'--pretty=format:%H %ct', *cmd).splitlines()
             if tag_next:
                 d=d[1:]
-            items.extend(self._grep_by_week_or_count(tag, reversed(d)))
+            items.extend(self._grep_by_week_or_count(tag[0], reversed(d)))
         
-        items.extend([(i, self.normalize_version(i)) for i in tags])
-        items = list(filter(lambda x:not x[1] is None, items))
-        items.sort(key=lambda x:V(x[1]), reverse=True)
         return OrderedDict(items)
     
     def check_pypi_version(self, version):
