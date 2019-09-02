@@ -17,12 +17,12 @@ class Versionator(BaseVersionator):
     git_repo = "https://github.com/Compass/compass"
     tpl_name = "compass"
     
-    build_dir = "frameworks/compass"
+    build_dir = "core"
 
 
     def _grep_by_week_or_count(self, tag, commits):
         return []
-      
+    
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
     config = get_config(sys.argv[1])
